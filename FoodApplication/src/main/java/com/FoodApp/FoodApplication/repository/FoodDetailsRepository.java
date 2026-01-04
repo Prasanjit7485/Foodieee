@@ -8,7 +8,8 @@ import com.FoodApp.FoodApplication.entity.RestaurantDetails;
 import org.springframework.stereotype.Repository;
 import java.util.*;
 @Repository
-public interface FoodDetailsRepository extends JpaRepository<FoodDetails, Long> {
+public interface FoodDetailsRepository extends JpaRepository<FoodDetails, Long> 
+{
     List<FoodDetails> findByRestaurant(RestaurantDetails restaurantId);
     List<FoodDetails> findByMenu(MenuDetails menuId);
 }
