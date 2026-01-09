@@ -9,6 +9,6 @@ public class RestaurantDetailsDto
 {
       private Long id;
       private String name;
-      private double rating;
+      private Double rating;
       private String address; 
 }

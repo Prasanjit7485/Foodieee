@@ -1,4 +1,4 @@
-package com.FoodApp.FoodApplication.Serivice;
+package com.FoodApp.FoodApplication.Service;
 import java.util.*;
 import com.FoodApp.FoodApplication.entity.MenuDetails;
 import com.FoodApp.FoodApplication.entity.RestaurantDetails;

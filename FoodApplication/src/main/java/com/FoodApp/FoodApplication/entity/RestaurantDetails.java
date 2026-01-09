@@ -22,7 +22,7 @@ public class RestaurantDetails
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private double rating;
+    private Double rating;
     private String address;
     @OneToMany(mappedBy = "restaurant", fetch = FetchType.LAZY)
     private List<FoodDetails> foodDetails;

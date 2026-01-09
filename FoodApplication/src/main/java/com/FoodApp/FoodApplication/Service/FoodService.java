@@ -1,5 +1,5 @@
 
-package com.FoodApp.FoodApplication.Serivice;
+package com.FoodApp.FoodApplication.Service;
 
 import java.util.ArrayList;
 import java.util.List;

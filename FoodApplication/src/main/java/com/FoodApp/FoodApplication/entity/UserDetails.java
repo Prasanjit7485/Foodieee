@@ -23,7 +23,7 @@ public class UserDetails
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; 
     private String name;
-    private int age;
+    private Integer age;
     @Column(name="email", unique=true, nullable=false)
     private String email;
     private String password;

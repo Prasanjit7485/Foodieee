@@ -1,4 +1,5 @@
 package com.FoodApp.FoodApplication.DTO;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,10 +9,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CartItemDetailsDto {
+public class OrderItemDetailsDto
+{
     private Long id;
-    private Long cartId;
+    private Long orderId;
     private Long foodId;
-    private Integer quantity;
     private Double price;
 }

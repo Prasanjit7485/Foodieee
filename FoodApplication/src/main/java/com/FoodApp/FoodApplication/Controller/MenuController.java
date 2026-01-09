@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
-import com.FoodApp.FoodApplication.Serivice.MenuService;
-import com.FoodApp.FoodApplication.Serivice.FoodService;
+import com.FoodApp.FoodApplication.Service.MenuService;
+import com.FoodApp.FoodApplication.Service.FoodService;
 import com.FoodApp.FoodApplication.DTO.FoodDetailsDto;
 import com.FoodApp.FoodApplication.DTO.MenuDetailsDto;
 @RestController

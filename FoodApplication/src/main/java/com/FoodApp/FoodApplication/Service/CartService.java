@@ -1,4 +1,4 @@
-package com.FoodApp.FoodApplication.Serivice;
+package com.FoodApp.FoodApplication.Service;
 
 import com.FoodApp.FoodApplication.DTO.CartDetailsDto;
 import com.FoodApp.FoodApplication.DTO.CartItemDetailsDto;
@@ -30,9 +30,15 @@ public class CartService
     @Autowired
     private UserDetailsRepository userDetailsRepository;
     //adding cart item to the cart
+    @Transactional
     public void addToCart(CartItemDetailsDto cartItemDetailsDto)
     {
-        cartItemDetailsRepository.save(toEntity(cartItemDetailsDto));
+        CartItemDetails cartItemDetails =toEntity(cartItemDetailsDto);
+        cartItemDetailsRepository.save(cartItemDetails);
+        CartDetails cartDetails=cartDetailsRepository.findById(cartItemDetailsDto.getCartId()).orElseThrow(()-> new ResourceNotFoundException("Cart with id " + cartItemDetailsDto.getCartId()  + " not found"));
+        Double oldPrice=cartDetails.getTotalPrice();
+        oldPrice+=cartItemDetails.getPrice();
+        cartDetails.setTotalPrice(oldPrice);
     }
     // returning list of cartitemdetails od specfic cart
     public List<CartItemDetailsDto> getCartItemDetails()
@@ -43,6 +49,7 @@ public class CartService
     {
        CartDetailsDto cartDetailsDto=new CartDetailsDto();
        CartDetails cartDetails=cartDetailsRepository.findById(cartId).orElseThrow(()->new ResourceNotFoundException("Cart id"+cartId+"not found"));
+       cartDetailsDto.setId(cartId);
        cartDetailsDto.setUserId(cartDetails.getUser().getId());
        List<CartItemDetailsDto> cartItemDetailsDtos=cartItemDetailsRepository.findCartDtosByCartId(cartId);
        cartDetailsDto.setItems(cartItemDetailsDtos);
@@ -52,6 +59,7 @@ public class CartService
            totalPrice+=(double)cartItemDetailsDto.getPrice();
        }
        cartDetailsDto.setTotalPrice(totalPrice);
+       //cartDetails.setTotalPrice(totalPrice);
        return cartDetailsDto;
     }
     //updating cart item
@@ -66,6 +74,8 @@ public class CartService
         cartItemDetails.setFood(foodDetails);
         cartItemDetails.setQuantity(cartItemDetailsDto.getQuantity());
         cartItemDetails.setPrice(foodDetails.getPrice()*cartItemDetailsDto.getQuantity());
+        Double newPrice =cartDetails.getTotalPrice()+cartItemDetails.getPrice();
+        cartDetails.setTotalPrice(newPrice);
 
     }
     //creating cart
@@ -87,11 +97,15 @@ public class CartService
         cartDetailsRepository.save(cartDetails);
     }
     //deleteing cart item
+    @Transactional
     public void deleteCartItem(long id)
     {
         CartItemDetails cartItemDetails=cartItemDetailsRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Cart Item with id " + id  + " not found"));
+        Double previousPrice=cartItemDetails.getPrice();
+        CartDetails cartDetails=cartDetailsRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Cart with id " + id  + " not found"));
+        Double newPrice =cartDetails.getTotalPrice()-previousPrice;
+        cartDetails.setTotalPrice(newPrice);
         cartItemDetailsRepository.deleteById(id);
-
     }
     //converting entity to Dto of CartItem
     public CartItemDetailsDto toDto(CartItemDetails cartItemDetails)
@@ -123,6 +137,11 @@ public class CartService
             cartItemDetailsDtoList.add(toDto(cartItemDetails));
         }
         return cartItemDetailsDtoList;
+    }
+    //Clearing Cart
+    public void clearCart(Long cartId)
+    {
+        cartDetailsRepository.deleteById(cartId);
     }
 
 }

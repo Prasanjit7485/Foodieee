@@ -23,7 +23,7 @@ public class FoodDetails
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; 
     private String name;
-    private float price;
+    private Double price;
     private String description;
     private Boolean available;
     

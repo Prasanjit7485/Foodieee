@@ -15,7 +15,7 @@ public class FoodDetailsDto
     @NotBlank
     private String name;
     @Positive
-    private float price;
+    private Double price;
     private String description;
     @NotNull
     private Boolean available;

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.FoodApp.FoodApplication.DTO.FoodDetailsDto;
-import com.FoodApp.FoodApplication.Serivice.FoodService;
+import com.FoodApp.FoodApplication.Service.FoodService;
 
 import jakarta.validation.Valid;
 @RestController

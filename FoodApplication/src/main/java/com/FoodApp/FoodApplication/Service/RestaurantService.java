@@ -1,4 +1,4 @@
-package com.FoodApp.FoodApplication.Serivice;
+package com.FoodApp.FoodApplication.Service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;

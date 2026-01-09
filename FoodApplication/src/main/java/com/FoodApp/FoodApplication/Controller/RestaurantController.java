@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.FoodApp.FoodApplication.DTO.FoodDetailsDto;
 import com.FoodApp.FoodApplication.DTO.MenuDetailsDto;
 import com.FoodApp.FoodApplication.DTO.RestaurantDetailsDto;
-import com.FoodApp.FoodApplication.Serivice.FoodService;
-import com.FoodApp.FoodApplication.Serivice.MenuService;
-import com.FoodApp.FoodApplication.Serivice.RestaurantService;
+import com.FoodApp.FoodApplication.Service.FoodService;
+import com.FoodApp.FoodApplication.Service.MenuService;
+import com.FoodApp.FoodApplication.Service.RestaurantService;
 
 @RestController
 @RequestMapping("/restaurants")

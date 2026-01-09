@@ -2,7 +2,7 @@ package com.FoodApp.FoodApplication.Controller;
 
 import com.FoodApp.FoodApplication.DTO.CartDetailsDto;
 import com.FoodApp.FoodApplication.DTO.CartItemDetailsDto;
-import com.FoodApp.FoodApplication.Serivice.CartService;
+import com.FoodApp.FoodApplication.Service.CartService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -49,5 +49,11 @@ public class CartController
     {
         cartService.deleteCartItem(cartItemId);
         return ResponseEntity.ok("Cart Item deleted Successfully");
+    }
+    @DeleteMapping("/clear/{cartId}")
+    public ResponseEntity<String> deleteCart(@PathVariable Long cartId)
+    {
+        cartService.clearCart(cartId);
+        return ResponseEntity.ok("Cart deleted Successfully");
     }
 }
