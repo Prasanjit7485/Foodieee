@@ -1,9 +1,12 @@
 package com.FoodApp.FoodApplication.Service;
+import com.FoodApp.FoodApplication.entity.UserAuthDetails;
+import com.FoodApp.FoodApplication.entity.UserProfile;
+import com.FoodApp.FoodApplication.repository.UserAuthDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.FoodApp.FoodApplication.DTO.UserDetailsDto;
-import com.FoodApp.FoodApplication.entity.UserDetails;
+
 import com.FoodApp.FoodApplication.excepetion.ResourceNotFoundException;
 import com.FoodApp.FoodApplication.repository.UserDetailsRepository;
 
@@ -17,12 +20,11 @@ public class UserService
 {
      @Autowired
      private UserDetailsRepository userDetailsRepository;
+     @Autowired
+     private UserAuthDetailsRepository userAuthDetailsRepository;
      public void saveUserDetails(UserDetailsDto userDetailsDto)
      {
         log.info("Saving user details: {}", userDetailsDto);
-         if(userDetailsRepository.existsByEmail(userDetailsDto.getPhoneNumber())) {
-            throw new ResourceNotFoundException("Email already exists: " + userDetailsDto.getPhoneNumber());
-        }
         if(userDetailsRepository.existsByPhoneNumber(userDetailsDto.getPhoneNumber())) {
             throw new ResourceNotFoundException("Phone number already exists: " + userDetailsDto.getPhoneNumber());
         }
@@ -30,40 +32,39 @@ public class UserService
      }
      public UserDetailsDto getUserDetailsById(Long id)
      {
-        UserDetails userDetails=userDetailsRepository.findById(id).orElseThrow(()->new RuntimeException("User not found"+id));
+        UserProfile userDetails=userDetailsRepository.findById(id).orElseThrow(()->new RuntimeException("User not found"+id));
         return toDto(userDetails);
      }
      public List<UserDetailsDto> getALlUserDetailsDto()
      {
-        List<UserDetails> userList=userDetailsRepository.findAll();
+        List<UserProfile> userList=userDetailsRepository.findAll();
         List<UserDetailsDto> dtoList=new ArrayList<>();
-        for(UserDetails userDetails:userList)
+        for(UserProfile userDetails:userList)
         {
             dtoList.add(toDto(userDetails));
         }
         return dtoList;
      }
-     public UserDetailsDto toDto(UserDetails userDetails)
+     public UserDetailsDto toDto(UserProfile userDetails)
      {
         UserDetailsDto dto=new UserDetailsDto();
         dto.setId(userDetails.getId());
         dto.setName(userDetails.getName());
         dto.setAge(userDetails.getAge());
-        dto.setEmail(userDetails.getEmail());
-        dto.setPassword(userDetails.getPassword());
         dto.setPhoneNumber(userDetails.getPhoneNumber());
         dto.setAddress(userDetails.getAddress());
+        dto.setUserAuthId(userDetails.getUserAuthDetails().getId());
         return dto;
      }
-     public UserDetails toEntity(UserDetailsDto userDetailsDto)
+     public UserProfile toEntity(UserDetailsDto userDetailsDto)
      {
-        UserDetails userDetails=new UserDetails();
+        UserProfile userDetails=new UserProfile();
         userDetails.setName(userDetailsDto.getName());
         userDetails.setAge(userDetailsDto.getAge());
-        userDetails.setEmail(userDetailsDto.getEmail());
-        userDetails.setPassword(userDetailsDto.getPassword());
         userDetails.setPhoneNumber(userDetailsDto.getPhoneNumber());
         userDetails.setAddress(userDetailsDto.getAddress());
+        UserAuthDetails userAuthDetails=userAuthDetailsRepository.findById(userDetailsDto.getUserAuthId()).orElseThrow(()->new RuntimeException("UserAuthDetails not found"+userDetailsDto.getUserAuthId()));;
+        userDetails.setUserAuthDetails(userAuthDetails);
         return userDetails;
      }
 }

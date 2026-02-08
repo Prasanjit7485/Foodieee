@@ -5,7 +5,7 @@ import com.FoodApp.FoodApplication.DTO.CartItemDetailsDto;
 import com.FoodApp.FoodApplication.entity.CartDetails;
 import com.FoodApp.FoodApplication.entity.FoodDetails;
 import com.FoodApp.FoodApplication.entity.CartItemDetails;
-import com.FoodApp.FoodApplication.entity.UserDetails;
+import com.FoodApp.FoodApplication.entity.UserProfile;
 import com.FoodApp.FoodApplication.excepetion.ResourceNotFoundException;
 import com.FoodApp.FoodApplication.repository.CartDetailsRepository;
 import com.FoodApp.FoodApplication.repository.CartItemDetailsRepository;
@@ -40,7 +40,7 @@ public class CartService
         oldPrice+=cartItemDetails.getPrice();
         cartDetails.setTotalPrice(oldPrice);
     }
-    // returning list of cartitemdetails od specfic cart
+    // returning list of cartitemdetails od specific cart
     public List<CartItemDetailsDto> getCartItemDetails()
     {
         return cartItemDetailsRepository.findAllDtos();
@@ -50,7 +50,7 @@ public class CartService
        CartDetailsDto cartDetailsDto=new CartDetailsDto();
        CartDetails cartDetails=cartDetailsRepository.findById(cartId).orElseThrow(()->new ResourceNotFoundException("Cart id"+cartId+"not found"));
        cartDetailsDto.setId(cartId);
-       cartDetailsDto.setUserId(cartDetails.getUser().getId());
+       cartDetailsDto.setUserId(cartDetails.getUserProfile().getId());
        List<CartItemDetailsDto> cartItemDetailsDtos=cartItemDetailsRepository.findCartDtosByCartId(cartId);
        cartDetailsDto.setItems(cartItemDetailsDtos);
        double totalPrice=0;
@@ -82,7 +82,7 @@ public class CartService
     public void  createCart(CartDetailsDto cartDetailsDto)
     {
         CartDetails cartDetails=new CartDetails();
-        UserDetails userDetails=userDetailsRepository.findById(cartDetailsDto.getUserId()).orElseThrow(()-> new ResourceNotFoundException("User with id " + cartDetailsDto.getUserId() + " not found"));
+        UserProfile userDetails=userDetailsRepository.findById(cartDetailsDto.getUserId()).orElseThrow(()-> new ResourceNotFoundException("User with id " + cartDetailsDto.getUserId() + " not found"));
         List<CartItemDetailsDto> cartItemDetailsDtoList=cartDetailsDto.getItems();
         double totalPrice=0;
         List<CartItemDetails> cartItemDetailsList=new ArrayList<>();
@@ -91,7 +91,7 @@ public class CartService
             cartItemDetailsList.add(toEntity(cartItemDetailsDto1));
             totalPrice+=cartItemDetailsDto1.getPrice();
         }
-        cartDetails.setUser(userDetails);
+        cartDetails.setUserProfile(userDetails);
         cartDetails.setItems(cartItemDetailsList);
         cartDetails.setTotalPrice(totalPrice);
         cartDetailsRepository.save(cartDetails);

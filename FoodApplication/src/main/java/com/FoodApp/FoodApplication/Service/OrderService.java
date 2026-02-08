@@ -31,10 +31,10 @@ public class OrderService
     @Transactional
     public void placeOrder(long userId)
     {
-        UserDetails userDetails=userDetailsRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("User id"+userId+"not found"));;
-        CartDetails cartDetails=cartDetailsRepository.findByUser(userDetails);
+        UserProfile userDetails=userDetailsRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("User id"+userId+"not found"));;
+        CartDetails cartDetails=cartDetailsRepository.findByUserProfile(userDetails);
         OrderDetails orderDetails=new OrderDetails();
-        orderDetails.setUserDetails(userDetails);
+        orderDetails.setUserProfile(userDetails);
         orderDetails.setTotalAmount(cartDetails.getTotalPrice());
         orderDetails.setStatus(OrderStatus.CREATED);
         orderDetails.setOrderTime(LocalDateTime.now());
@@ -55,8 +55,8 @@ public class OrderService
     }
     public List<OrderDetailsDto>  getOrderDetailsByUserId(long userId)
     {
-        UserDetails userDetails=userDetailsRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("User id"+userId+"not found"));;
-        List<OrderDetails> orderDetails=orderDetailsRepository.findByUserDetails(userDetails);
+        UserProfile userDetails=userDetailsRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("User id"+userId+"not found"));;
+        List<OrderDetails> orderDetails=orderDetailsRepository.findByUserProfile(userDetails);
         List<OrderDetailsDto> orderDetailsDto=new ArrayList<>();
         for(OrderDetails orderDetails1:orderDetails)
             {
@@ -68,7 +68,7 @@ public class OrderService
     {
         OrderDetailsDto orderDetailsDto=new OrderDetailsDto();
         orderDetailsDto.setId(orderDetails.getId());
-        orderDetailsDto.setUserId(orderDetails.getUserDetails().getId());
+        orderDetailsDto.setUserId(orderDetails.getUserProfile().getId());
         orderDetailsDto.setStatus(orderDetails.getStatus());
         orderDetailsDto.setOrderTime(orderDetails.getOrderTime());
         orderDetailsDto.setTotalAmount(orderDetails.getTotalAmount());

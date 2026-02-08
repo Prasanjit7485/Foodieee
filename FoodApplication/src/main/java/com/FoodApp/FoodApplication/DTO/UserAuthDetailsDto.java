@@ -8,4 +8,5 @@ public class UserAuthDetailsDto
     private String username;
     private String password;
     private Roles role;
+    private Long userId;
 }

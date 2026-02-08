@@ -23,7 +23,7 @@ public class OrderDetails
     private Long id;
     @ManyToOne(fetch= FetchType.LAZY)
     @JoinColumn(name="user_id",nullable=false)
-    private UserDetails userDetails;
+    private UserProfile userProfile;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
     private double totalAmount;

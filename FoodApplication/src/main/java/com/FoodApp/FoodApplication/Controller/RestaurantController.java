@@ -27,12 +27,12 @@ public class RestaurantController
    @Autowired 
     FoodService foodService;
   @GetMapping("/all")
-  public List<RestaurantDetailsDto> getAllResturants()//returning all the resturant in present in db
+  public List<RestaurantDetailsDto> getAllRestaurants()//returning all the resturant in present in db
   {
     return service.getAll();
   }  
   @GetMapping("/{id}")
-  public ResponseEntity<RestaurantDetailsDto> getResturantById(@PathVariable Long id)
+  public ResponseEntity<RestaurantDetailsDto> getRestaurantById(@PathVariable Long id)
   {
     return ResponseEntity.ok(service.getId(id));
   } 

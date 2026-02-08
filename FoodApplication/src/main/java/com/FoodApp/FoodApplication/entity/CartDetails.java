@@ -29,7 +29,7 @@ public class CartDetails
     private Long id;
     @OneToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private UserDetails user;
+    private UserProfile userProfile;
     @OneToMany(mappedBy="cart",cascade=CascadeType.ALL,orphanRemoval = false)
     private List<CartItemDetails> items= new ArrayList<>();
     private Double totalPrice;

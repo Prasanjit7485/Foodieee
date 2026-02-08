@@ -16,7 +16,7 @@ import com.FoodApp.FoodApplication.Service.UserService;
 
 
 @RestController 
-@RequestMapping("/users")
+@RequestMapping("/profile")
 public class UserController 
 {
     @Autowired

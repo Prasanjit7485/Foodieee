@@ -10,8 +10,7 @@ public class UserDetailsDto
    private Long id;
    private String name;
    private Integer age;
-   private String email;
-   private String password;
    private String phoneNumber;
-   private String address;   
+   private String address;
+   private Long UserAuthId;
 }

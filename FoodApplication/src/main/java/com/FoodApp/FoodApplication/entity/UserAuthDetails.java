@@ -24,6 +24,8 @@ public class UserAuthDetails implements UserDetails
     private String password;
     @Enumerated(EnumType.STRING)
     private Roles role;
+    @OneToOne(mappedBy = "userAuthDetails", fetch = FetchType.LAZY)
+    private UserProfile userProfile;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
