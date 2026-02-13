@@ -30,10 +30,30 @@ public class RestaurantService
    dto.setRating(restaurantDetails.getRating());
    dto.setAddress(restaurantDetails.getAddress());
    return dto;
- } 
+ }
+ public RestaurantDetails toEntity(RestaurantDetailsDto restaurantDetailsDto)
+ {
+     RestaurantDetails restaurantDetails=new RestaurantDetails();
+     restaurantDetails.setName(restaurantDetailsDto.getName());
+     restaurantDetails.setRating(restaurantDetailsDto.getRating());
+     restaurantDetails.setAddress(restaurantDetailsDto.getAddress());
+     return restaurantDetails;
+ }
  public List<RestaurantDetailsDto> toDtoList(List<RestaurantDetails> restaurantDetailsList)
  {
    List<RestaurantDetailsDto> dtoList=restaurantDetailsList.stream().map(this::toDto).toList();
    return dtoList;
+ }
+ public void addRestaurant(RestaurantDetailsDto restaurantDetailsDto)
+ {
+     restaurantDetailsRepository.save(toEntity(restaurantDetailsDto));
+ }
+ public void updateRestaurant(Long id,RestaurantDetailsDto restaurantDetailsDto)
+ {
+     RestaurantDetails restaurantDetails=restaurantDetailsRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Restaurant with id " + id + " not found"));
+     restaurantDetails.setName(restaurantDetailsDto.getName());
+     restaurantDetails.setRating(restaurantDetailsDto.getRating());
+     restaurantDetails.setAddress(restaurantDetailsDto.getAddress());
+
  }
 }

@@ -27,6 +27,8 @@ public class FoodController
     service.saveFoodDetails(foodDetailsDto);
     return ResponseEntity.ok("Food details saved successfully");
  }
+ @PostMapping("/update/id")
+
  @GetMapping("/{id}")
  public ResponseEntity<FoodDetailsDto> getFoodDetailsById(@PathVariable Long id)
  {

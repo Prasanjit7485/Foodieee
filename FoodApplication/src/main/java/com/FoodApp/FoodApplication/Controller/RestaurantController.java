@@ -2,12 +2,11 @@ package com.FoodApp.FoodApplication.Controller;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.FoodApp.FoodApplication.DTO.FoodDetailsDto;
 import com.FoodApp.FoodApplication.DTO.MenuDetailsDto;
@@ -22,12 +21,14 @@ public class RestaurantController
 {
   @Autowired
    RestaurantService service;
+
+
   @Autowired
    MenuService menuService;
    @Autowired 
     FoodService foodService;
   @GetMapping("/all")
-  public List<RestaurantDetailsDto> getAllRestaurants()//returning all the resturant in present in db
+  public List<RestaurantDetailsDto> getAllRestaurants()//returning all the restaurant in present in db
   {
     return service.getAll();
   }  
@@ -42,10 +43,21 @@ public class RestaurantController
  {
     return ResponseEntity.ok(menuService.getMenuDetails(id));
  }
-
  @GetMapping("/{id}/foods")
   public ResponseEntity<List<FoodDetailsDto>> getFoodById(@PathVariable Long id)
   {
       return ResponseEntity.ok(foodService.getRestaurantFoodDetailsDto(id));
+  }
+  @PostMapping("/add")
+    public ResponseEntity<String> addRestaurant(@Valid @RequestBody RestaurantDetailsDto restaurantDetailsDto)
+  {
+      service.addRestaurant(restaurantDetailsDto);
+      return ResponseEntity.status(HttpStatus.CREATED).body(restaurantDetailsDto.toString());
+  }
+  @PutMapping("/update/{id}")
+  public ResponseEntity<String> updateRestaurant(@PathVariable Long id, @Valid @RequestBody RestaurantDetailsDto restaurantDetailsDto)
+  {
+      service.updateRestaurant(id,restaurantDetailsDto);
+      return ResponseEntity.ok(restaurantDetailsDto.toString());
   }
 }

@@ -7,6 +7,6 @@ import lombok.Setter;
 public class MenuDetailsDto 
 {
     private Long id;
-    private String Section;
-    private Long RestaurantId;
+    private String section;
+    private Long restaurantId;
 }
