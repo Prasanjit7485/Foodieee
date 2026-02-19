@@ -16,9 +16,9 @@ public class FoodDetailsDto
     private String name;
     @Positive
     private Double price;
+    private Double rating;
+    private String imageFilePath;
     private String description;
-    @NotNull
-    private Boolean available;
     @NotNull
     private Long menuId;
     @NotNull

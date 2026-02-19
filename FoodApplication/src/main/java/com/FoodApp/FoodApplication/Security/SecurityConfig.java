@@ -1,7 +1,6 @@
 package com.FoodApp.FoodApplication.Security;
-import com.FoodApp.FoodApplication.Security.JWTAuthenticationFilter;
-import com.FoodApp.FoodApplication.Security.JWTUtil;
-import com.FoodApp.FoodApplication.Security.JwtValidationFilter;
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,11 +18,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import java.util.Arrays;
-
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class
+SecurityConfig {
 
     private final JWTUtil jwtUtil;
     private final UserDetailsService userDetailsService;
@@ -74,11 +72,27 @@ public class SecurityConfig {
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> {})
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/user-register", "/generate-token").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers(
+                        "/profile/**",
+                        "/api/**",
+                        "/orders/**",
+                        "/cart/**"
+                ).authenticated()
+
+                // 🔓 Public endpoints (NO LOGIN)
+                .requestMatchers(
+                        "/restaurants/**",
+                        "/menus/**",
+                        "/restaurants/foods/**",
+                        "/uploads/**"
+                ).permitAll()
+
+                // Everything else public (safe during development)
+                .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(jwtValidationFilter, JWTAuthenticationFilter.class);

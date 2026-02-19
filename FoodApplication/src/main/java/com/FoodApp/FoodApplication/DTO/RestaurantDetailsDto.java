@@ -10,5 +10,7 @@ public class RestaurantDetailsDto
       private Long id;
       private String name;
       private Double rating;
+      private String imageFilePath;
+      private String description;
       private String address; 
 }

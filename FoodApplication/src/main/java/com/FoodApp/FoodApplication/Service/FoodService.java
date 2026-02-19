@@ -55,9 +55,9 @@ public class FoodService
         return dtoList;
     }
     //Getting food details by restaurant id
-     public List<FoodDetailsDto> getRestaurantFoodDetailsDto(Long resturantId)
+     public List<FoodDetailsDto> getRestaurantFoodDetailsDto(Long restaurantId)
      {
-        List<FoodDetails> foodList=foodDetailsRepository.findByRestaurant(restaurantDetailsRepository.findById(resturantId).orElseThrow(()-> new ResourceNotFoundException("Restaurant with id " + resturantId + " not found")));
+        List<FoodDetails> foodList=foodDetailsRepository.findByRestaurant(restaurantDetailsRepository.findById(restaurantId).orElseThrow(()-> new ResourceNotFoundException("Restaurant with id " + restaurantId + " not found")));
          List<FoodDetailsDto> dtoList=new ArrayList<>();
         for(FoodDetails foodDetails:foodList)
         {
@@ -84,7 +84,8 @@ public class FoodService
         dto.setName(foodDetails.getName());
         dto.setPrice(foodDetails.getPrice());
         dto.setDescription(foodDetails.getDescription());
-        dto.setAvailable(foodDetails.getAvailable());
+        dto.setRating(foodDetails.getRating());
+        dto.setImageFilePath(foodDetails.getImageFilePath());
         dto.setMenuId(foodDetails.getMenu().getId());
         dto.setRestaurantId(foodDetails.getRestaurant().getId());
         return dto;
@@ -95,13 +96,14 @@ public class FoodService
         foodDetails.setName(dto.getName());
         foodDetails.setPrice(dto.getPrice());
         foodDetails.setDescription(dto.getDescription());
-        foodDetails.setAvailable(dto.getAvailable());
+        foodDetails.setRating(dto.getRating());
+        foodDetails.setImageFilePath(dto.getImageFilePath());
         @SuppressWarnings("null")
         MenuDetails menuDetails=menuDetailsRepository.findById(dto.getMenuId()).orElseThrow(()-> new ResourceNotFoundException("Menu with id " + dto.getMenuId() + " not found"));
         foodDetails.setMenu(menuDetails);
         @SuppressWarnings("null")
-        RestaurantDetails restuarantDetails=restaurantDetailsRepository.findById(dto.getRestaurantId()).orElseThrow(()->new ResourceNotFoundException("Restaurant with id " + dto.getRestaurantId() + " not found"));
-        foodDetails.setRestaurant(restuarantDetails);
+        RestaurantDetails restaurantDetails =restaurantDetailsRepository.findById(dto.getRestaurantId()).orElseThrow(()->new ResourceNotFoundException("Restaurant with id " + dto.getRestaurantId() + " not found"));
+        foodDetails.setRestaurant(restaurantDetails);
         return foodDetails;
     }
 

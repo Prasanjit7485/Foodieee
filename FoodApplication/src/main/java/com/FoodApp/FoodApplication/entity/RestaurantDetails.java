@@ -23,6 +23,8 @@ public class RestaurantDetails
     private Long id;
     private String name;
     private Double rating;
+    private String imageFilePath;
+    private String description;
     private String address;
     @OneToMany(mappedBy = "restaurant", fetch = FetchType.LAZY)
     private List<FoodDetails> foodDetails;

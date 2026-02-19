@@ -8,6 +8,8 @@ import com.FoodApp.FoodApplication.DTO.RestaurantDetailsDto;
 import com.FoodApp.FoodApplication.entity.RestaurantDetails;
 import com.FoodApp.FoodApplication.excepetion.ResourceNotFoundException;
 import com.FoodApp.FoodApplication.repository.RestaurantDetailsRepository;
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 public class RestaurantService 
 {
@@ -29,6 +31,8 @@ public class RestaurantService
    dto.setName(restaurantDetails.getName());
    dto.setRating(restaurantDetails.getRating());
    dto.setAddress(restaurantDetails.getAddress());
+   dto.setDescription(restaurantDetails.getDescription());
+   dto.setImageFilePath(restaurantDetails.getImageFilePath());
    return dto;
  }
  public RestaurantDetails toEntity(RestaurantDetailsDto restaurantDetailsDto)
@@ -37,6 +41,8 @@ public class RestaurantService
      restaurantDetails.setName(restaurantDetailsDto.getName());
      restaurantDetails.setRating(restaurantDetailsDto.getRating());
      restaurantDetails.setAddress(restaurantDetailsDto.getAddress());
+     restaurantDetails.setDescription(restaurantDetailsDto.getDescription());
+     restaurantDetails.setImageFilePath(restaurantDetailsDto.getImageFilePath());
      return restaurantDetails;
  }
  public List<RestaurantDetailsDto> toDtoList(List<RestaurantDetails> restaurantDetailsList)
@@ -48,12 +54,15 @@ public class RestaurantService
  {
      restaurantDetailsRepository.save(toEntity(restaurantDetailsDto));
  }
- public void updateRestaurant(Long id,RestaurantDetailsDto restaurantDetailsDto)
+ @Transactional
+ public RestaurantDetailsDto updateRestaurant(Long id,RestaurantDetailsDto restaurantDetailsDto)
  {
      RestaurantDetails restaurantDetails=restaurantDetailsRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Restaurant with id " + id + " not found"));
      restaurantDetails.setName(restaurantDetailsDto.getName());
      restaurantDetails.setRating(restaurantDetailsDto.getRating());
+     restaurantDetails.setImageFilePath(restaurantDetailsDto.getImageFilePath());
+     restaurantDetails.setDescription(restaurantDetailsDto.getDescription());
      restaurantDetails.setAddress(restaurantDetailsDto.getAddress());
-
+     return toDto(restaurantDetails);
  }
 }

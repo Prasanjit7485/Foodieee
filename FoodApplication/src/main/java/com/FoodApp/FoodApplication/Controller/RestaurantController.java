@@ -2,6 +2,7 @@ package com.FoodApp.FoodApplication.Controller;
 
 import java.util.List;
 
+import com.FoodApp.FoodApplication.entity.RestaurantDetails;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,8 +22,6 @@ public class RestaurantController
 {
   @Autowired
    RestaurantService service;
-
-
   @Autowired
    MenuService menuService;
    @Autowired 
@@ -55,9 +54,8 @@ public class RestaurantController
       return ResponseEntity.status(HttpStatus.CREATED).body(restaurantDetailsDto.toString());
   }
   @PutMapping("/update/{id}")
-  public ResponseEntity<String> updateRestaurant(@PathVariable Long id, @Valid @RequestBody RestaurantDetailsDto restaurantDetailsDto)
+  public ResponseEntity<RestaurantDetailsDto> updateRestaurant(@PathVariable Long id, @Valid @RequestBody RestaurantDetailsDto restaurantDetailsDto)
   {
-      service.updateRestaurant(id,restaurantDetailsDto);
-      return ResponseEntity.ok(restaurantDetailsDto.toString());
+      return ResponseEntity.ok(service.updateRestaurant(id,restaurantDetailsDto));
   }
 }

@@ -24,8 +24,9 @@ public class FoodDetails
     private Long id; 
     private String name;
     private Double price;
+    private Double rating;
     private String description;
-    private Boolean available;
+    private String imageFilePath;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_id")
