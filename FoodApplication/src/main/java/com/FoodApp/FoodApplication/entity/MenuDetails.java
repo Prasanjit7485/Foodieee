@@ -1,6 +1,7 @@
 package com.FoodApp.FoodApplication.entity;
 
-import java.util.*;
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;

@@ -26,6 +26,8 @@ public class FoodDetails
     private Double price;
     private Double rating;
     private String description;
+    private Boolean isVeg;
+    private Boolean bestseller;
     private String imageFilePath;
     
     @ManyToOne(fetch = FetchType.LAZY)

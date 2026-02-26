@@ -1,6 +1,5 @@
 package com.FoodApp.FoodApplication.DTO;
 import lombok.Getter;
-
 import lombok.Setter;
 @Getter
 @Setter

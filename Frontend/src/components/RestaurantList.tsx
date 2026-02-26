@@ -31,10 +31,11 @@ const RestaurantList = () => {
         {restaurants.map((r) => (
           <RestaurantCard
             key={r.id}
+            id={r.id}
             name={r.name}
             rating={r.rating}
             description={r.description}
-            imagePath={r.imageFilePath}
+            imageFilePath={r.imageFilePath}
             address={r.address}
           />
         ))}

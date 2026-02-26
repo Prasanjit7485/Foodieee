@@ -19,6 +19,8 @@ public class FoodDetailsDto
     private Double rating;
     private String imageFilePath;
     private String description;
+    private Boolean isVeg;
+    private Boolean bestseller;
     @NotNull
     private Long menuId;
     @NotNull

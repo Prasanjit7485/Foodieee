@@ -3,12 +3,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.FoodApp.FoodApplication.DTO.RestaurantDetailsDto;
 import com.FoodApp.FoodApplication.entity.RestaurantDetails;
 import com.FoodApp.FoodApplication.excepetion.ResourceNotFoundException;
 import com.FoodApp.FoodApplication.repository.RestaurantDetailsRepository;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class RestaurantService 

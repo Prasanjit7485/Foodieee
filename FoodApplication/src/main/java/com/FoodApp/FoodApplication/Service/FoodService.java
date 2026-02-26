@@ -86,6 +86,8 @@ public class FoodService
         dto.setDescription(foodDetails.getDescription());
         dto.setRating(foodDetails.getRating());
         dto.setImageFilePath(foodDetails.getImageFilePath());
+        dto.setBestseller(foodDetails.getBestseller());
+        dto.setIsVeg(foodDetails.getIsVeg());
         dto.setMenuId(foodDetails.getMenu().getId());
         dto.setRestaurantId(foodDetails.getRestaurant().getId());
         return dto;
@@ -98,6 +100,8 @@ public class FoodService
         foodDetails.setDescription(dto.getDescription());
         foodDetails.setRating(dto.getRating());
         foodDetails.setImageFilePath(dto.getImageFilePath());
+        foodDetails.setBestseller(dto.getBestseller());
+        foodDetails.setIsVeg(dto.getIsVeg());
         @SuppressWarnings("null")
         MenuDetails menuDetails=menuDetailsRepository.findById(dto.getMenuId()).orElseThrow(()-> new ResourceNotFoundException("Menu with id " + dto.getMenuId() + " not found"));
         foodDetails.setMenu(menuDetails);
