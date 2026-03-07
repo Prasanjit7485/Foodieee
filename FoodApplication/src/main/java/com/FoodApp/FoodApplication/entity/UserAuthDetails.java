@@ -1,14 +1,24 @@
 package com.FoodApp.FoodApplication.entity;
-import com.FoodApp.FoodApplication.Enums.Roles;
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.List;
+import com.FoodApp.FoodApplication.Enums.Roles;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -23,7 +33,8 @@ public class UserAuthDetails implements UserDetails
     @Column(nullable = false)
     private String password;
     @Enumerated(EnumType.STRING)
-    private Roles role;
+    @Column(nullable = false)
+    private Roles role=Roles.USER;
     @OneToOne(mappedBy = "userAuthDetails", fetch = FetchType.LAZY)
     private UserProfile userProfile;
     @Override

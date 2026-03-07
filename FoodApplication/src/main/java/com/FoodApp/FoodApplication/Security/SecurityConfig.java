@@ -78,20 +78,18 @@ SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                         "/profile/**",
-                        "/api/**",
                         "/orders/**",
                         "/cart/**"
                 ).authenticated()
-
-                // 🔓 Public endpoints (NO LOGIN)
                 .requestMatchers(
                         "/restaurants/**",
                         "/menus/**",
+                        "/api/**",
                         "/restaurants/foods/**",
-                        "/uploads/**"
+                        "/uploads/**",
+                        "/generate-token",
+                        "/auth/**"
                 ).permitAll()
-
-                // Everything else public (safe during development)
                 .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

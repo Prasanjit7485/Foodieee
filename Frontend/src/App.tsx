@@ -9,6 +9,7 @@ import Cart from "./pages/Cart";
 import NotFound from "./pages/NotFound";
 import RestaurantDetail from "./pages/RestaurantsDetail";
 import { CartProvider } from "./context/CartContext";
+imp
 
 const queryClient = new QueryClient();
 

@@ -35,11 +35,14 @@ public class JWTRefreshFilter extends OncePerRequestFilter
         }
         JwtAuthenticationToken jwtAuthenticationToken=new JwtAuthenticationToken(refreshToken);
         Authentication authResult=authenticationManager.authenticate(jwtAuthenticationToken);
-        if(authResult.isAuthenticated())
+        if(authResult!=null&&authResult.isAuthenticated())
         {
             String newToken=jwtUtil.generateToken(authResult.getName(),15);
             response.setHeader("Authorization","Bearer "+newToken);
+            response.setStatus(HttpServletResponse.SC_OK);
+            return;
         }
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
     private String extractJwtFromRequest(HttpServletRequest request)
     {
@@ -53,9 +56,9 @@ public class JWTRefreshFilter extends OncePerRequestFilter
         {
             if("refreshToken".equals(cookie.getName()))
             {
-                refreshToken=cookie.getValue();
+                return cookie.getValue();
             }
         }
-        return refreshToken;
+        return null;
     }
 }
