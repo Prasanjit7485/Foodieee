@@ -2,6 +2,7 @@ package com.FoodApp.FoodApplication.Service;
 import com.FoodApp.FoodApplication.entity.UserAuthDetails;
 import com.FoodApp.FoodApplication.entity.UserProfile;
 import com.FoodApp.FoodApplication.repository.UserAuthDetailsRepository;
+import jakarta.annotation.Nonnull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,7 @@ import com.FoodApp.FoodApplication.excepetion.ResourceNotFoundException;
 import com.FoodApp.FoodApplication.repository.UserDetailsRepository;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -44,6 +46,15 @@ public class UserService
             dtoList.add(toDto(userDetails));
         }
         return dtoList;
+     }
+    @Transactional
+     public void updateProfile(@Nonnull UserDetailsDto userDetailsDto)
+     {
+         UserProfile userProfile=userDetailsRepository.findById(userDetailsDto.getId()).orElseThrow(()->new RuntimeException("User not found"+userDetailsDto.getId()));
+         userProfile.setName(userDetailsDto.getName());
+         userProfile.setAddress(userDetailsDto.getAddress());
+         userProfile.setPhoneNumber(userDetailsDto.getPhoneNumber());
+         userProfile.setAge(userDetailsDto.getAge());
      }
      public UserDetailsDto toDto(UserProfile userDetails)
      {

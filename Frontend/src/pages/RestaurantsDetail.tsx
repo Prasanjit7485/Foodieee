@@ -58,16 +58,34 @@ const FoodCard = ({
   restaurantName: string;
 }) => {
   const { items, addItem, updateQty } = useCart();
-  const cartItem = items.find((i) => i.id === item.id);
+  const navigate = useNavigate();
+  const isLoggedIn = !!localStorage.getItem("token"); // 👈 check token
+  const cartItem = items.find((i) => i.foodId === item.id); // ✅ match by foodId
   const qty = cartItem?.quantity ?? 0;
-console.log(buildImageUrl(item.imageFilePath));
+
+  // 👇 Auth-guarded handler
+  const handleAddItem = () => {
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+    addItem({
+      foodId: item.id, // ✅ correct field name CartContext expects
+      name: item.name,
+      restaurant: restaurantName,
+      price: item.price,
+      image: item.imageFilePath,
+    });
+  };
+
+  console.log(buildImageUrl(item.imageFilePath));
+
   return (
     <div className="flex gap-3 rounded-2xl bg-card p-3 shadow-[var(--card-shadow)]">
       {/* Image */}
       <div className="relative h-28 w-28 flex-shrink-0 overflow-hidden rounded-xl">
         <img
           src={buildImageUrl(item.imageFilePath)}
-          
           alt={item.name}
           className="h-full w-full object-cover"
         />
@@ -75,28 +93,20 @@ console.log(buildImageUrl(item.imageFilePath));
         <div className="absolute bottom-2 left-0 right-0 flex justify-center">
           {qty === 0 ? (
             <button
-              onClick={() =>
-                addItem({
-                  id: item.id,
-                  name: item.name,
-                  restaurant: restaurantName,
-                  price: item.price,
-                  image: item.imageFilePath,
-                })
-              }
+              onClick={handleAddItem} // 👈 use guarded handler
               className="flex items-center gap-1 rounded-xl bg-primary px-4 py-1 text-xs font-bold text-primary-foreground shadow-md"
             >
               <Plus className="h-3 w-3" /> ADD
             </button>
           ) : (
             <div className="flex items-center gap-2 rounded-xl bg-primary px-2 py-1 shadow-md">
-              <button onClick={() => updateQty(item.id, -1)}>
+              <button onClick={() => cartItem && updateQty(cartItem.id!, qty - 1, cartItem)}>
                 <Minus className="h-3.5 w-3.5 text-primary-foreground" />
               </button>
               <span className="min-w-[14px] text-center text-xs font-bold text-primary-foreground">
                 {qty}
               </span>
-              <button onClick={() => updateQty(item.id, 1)}>
+              <button onClick={() => cartItem && updateQty(cartItem.id!, qty + 1, cartItem)}>
                 <Plus className="h-3.5 w-3.5 text-primary-foreground" />
               </button>
             </div>

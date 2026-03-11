@@ -33,7 +33,7 @@ public class CartService
     @Transactional
     public void addToCart(CartItemDetailsDto cartItemDetailsDto)
     {
-        CartItemDetails cartItemDetails =toEntity(cartItemDetailsDto);
+        CartItemDetails cartItemDetails=toEntity(cartItemDetailsDto);
         cartItemDetailsRepository.save(cartItemDetails);
         CartDetails cartDetails=cartDetailsRepository.findById(cartItemDetailsDto.getCartId()).orElseThrow(()-> new ResourceNotFoundException("Cart with id " + cartItemDetailsDto.getCartId()  + " not found"));
         Double oldPrice=cartDetails.getTotalPrice();
@@ -44,6 +44,17 @@ public class CartService
     public List<CartItemDetailsDto> getCartItemDetails()
     {
         return cartItemDetailsRepository.findAllDtos();
+    }
+    public CartDetailsDto getCartDetailsByUserId(long userId)
+    {
+        CartDetailsDto cartDetailsDtos=new CartDetailsDto();
+        UserProfile userProfile=userDetailsRepository.findById(userId).orElseThrow(()-> new ResourceNotFoundException("User with id " + userId + " not found"));
+        CartDetails cartDetails=cartDetailsRepository.findByUserProfile(userProfile);
+        cartDetailsDtos.setUserId(userProfile.getId());
+        cartDetailsDtos.setId(cartDetails.getId());
+        //cartDetailsDtos.setTotalPrice(cartDetails.getTotalPrice());
+        //cartDetailsDtos.setItems(toDtoList(cartDetails.getItems()));
+        return cartDetailsDtos;
     }
     public CartDetailsDto  getCartDetails(long cartId)
     {

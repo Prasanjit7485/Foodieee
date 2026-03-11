@@ -1,5 +1,10 @@
 package com.FoodApp.FoodApplication.Security;
 
+import java.util.Map;
+import java.util.Optional;
+
+import com.FoodApp.FoodApplication.entity.UserAuthDetails;
+import com.FoodApp.FoodApplication.repository.UserAuthDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,11 +14,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.*;
 @RestController
 @RequestMapping("/auth")
 public class AuthController
 {
+    @Autowired
+    UserAuthDetailsRepository userAuthDetailsRepository;
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
     public AuthController(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
@@ -35,8 +41,14 @@ public class AuthController
                 request.getPassword()
             )
         );
+         Optional<UserAuthDetails> userAuthDetails=userAuthDetailsRepository.findByUsername(request.getUsername());
+
+         long userid=userAuthDetails.get().getUserProfile().getId();
          String token = jwtUtil.generateToken(request.getUsername(), 15);
-    return Map.of("token",token);
+    return Map.of(
+            "token", token,
+            "userId", String.valueOf(userid)
+    );
     } 
     
 }
