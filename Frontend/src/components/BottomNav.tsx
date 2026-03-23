@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 const tabs = [
   { id: "home", label: "Home", icon: Home, path: "/" },
+  { id: "profile", label: "Profile", icon: User, path: "/profile" },
   { id: "cart", label: "Cart", icon: ShoppingCart, path: "/cart" },
 ];
 
