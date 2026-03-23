@@ -92,6 +92,13 @@ public class FoodService
         dto.setRestaurantId(foodDetails.getRestaurant().getId());
         return dto;
     }
+    public List<FoodDetailsDto> getFoodDetailsByName(String foodName)
+    {
+        List<FoodDetails> foodDetails=foodDetailsRepository.searchByName(foodName);
+        List<FoodDetailsDto> dtoList=new ArrayList<>();
+        for(FoodDetails fooddeta:foodDetails) dtoList.add(toDto(fooddeta));
+        return dtoList;
+    }
     public FoodDetails toEntity(FoodDetailsDto dto)
     {
         FoodDetails foodDetails=new FoodDetails();

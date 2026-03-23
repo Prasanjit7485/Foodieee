@@ -30,7 +30,12 @@ public class RestaurantController
   public List<RestaurantDetailsDto> getAllRestaurants()//returning all the restaurant in present in db
   {
     return service.getAll();
-  }  
+  }
+  @GetMapping("/{restaurantName}")
+  public List<RestaurantDetailsDto> getAllRestaurantsByRestaurantName(@PathVariable String restaurantName)
+  {
+      return service.getAllRestaurantsByRestaurantName(restaurantName);
+  }
   @GetMapping("/{id}")
   public ResponseEntity<RestaurantDetailsDto> getRestaurantById(@PathVariable Long id)
   {

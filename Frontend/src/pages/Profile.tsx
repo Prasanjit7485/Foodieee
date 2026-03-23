@@ -320,7 +320,7 @@ const Profile = () => {
       address,
     };
     try {
-      const res = await fetch(`http://localhost:8080/profile/update/${userId}`, {
+      const res = await fetch(`http://localhost:8080/profile/update`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify(payload),

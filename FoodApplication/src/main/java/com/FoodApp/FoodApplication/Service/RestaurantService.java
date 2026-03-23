@@ -54,6 +54,11 @@ public class RestaurantService
  {
      restaurantDetailsRepository.save(toEntity(restaurantDetailsDto));
  }
+ public List<RestaurantDetailsDto> getAllRestaurantsByRestaurantName(String restaurantName)
+ {
+     List<RestaurantDetails> restaurantDetailsList=restaurantDetailsRepository.searchByName(restaurantName);
+     return toDtoList(restaurantDetailsList);
+ }
  @Transactional
  public RestaurantDetailsDto updateRestaurant(Long id,RestaurantDetailsDto restaurantDetailsDto)
  {

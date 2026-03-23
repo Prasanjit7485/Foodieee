@@ -30,6 +30,11 @@ public class FoodController
     FoodDetailsDto dto=service.getFoodDetailsById(id);
     return ResponseEntity.ok(dto);
  }
+ @GetMapping("/{foodName}")
+ public ResponseEntity<List<FoodDetailsDto>>  getFoodDetailsByName(@PathVariable String foodName)
+ {
+     return ResponseEntity.ok(service.getFoodDetailsByName(foodName));
+ }
  @GetMapping("/all")
  public ResponseEntity<List<FoodDetailsDto>> getAllFoodDetails()
  {
