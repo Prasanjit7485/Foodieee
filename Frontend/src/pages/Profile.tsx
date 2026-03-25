@@ -6,7 +6,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   LogOut, ArrowLeft, Save, ChevronRight,
   User, MapPin, ClipboardList, Settings, Shield,
-  Loader2, ShoppingBag, Clock, ChevronDown, ChevronUp
+  Loader2, ShoppingBag, Clock, ChevronDown, ChevronUp,
+  Utensils, Star, Package
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { toast } from "@/hooks/use-toast";
@@ -51,6 +52,44 @@ interface FoodDto {
   restaurantId: number;
 }
 
+interface OrderItemDetailsFromApi {
+  id: number;
+  orderId: number;
+  foodId: number;
+  price: number;
+}
+
+// ── Grouped item ──────────────────────────────────────────────────────────────
+
+interface GroupedItem {
+  foodId: number;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  rawItems: OrderItemDetailsFromApi[];
+}
+
+function groupByFood(items: OrderItemDetailsFromApi[]): GroupedItem[] {
+  const map = new Map<number, GroupedItem>();
+  for (const item of items) {
+    const existing = map.get(item.foodId);
+    if (existing) {
+      existing.quantity   += 1;
+      existing.totalPrice += item.price;
+      existing.rawItems.push(item);
+    } else {
+      map.set(item.foodId, {
+        foodId:     item.foodId,
+        quantity:   1,
+        unitPrice:  item.price,
+        totalPrice: item.price,
+        rawItems:   [item],
+      });
+    }
+  }
+  return [...map.values()];
+}
+
 // ── StatusBadge ───────────────────────────────────────────────────────────────
 
 const StatusBadge = ({ status }: { status: string }) => {
@@ -68,47 +107,82 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
+// ── VegIcon ───────────────────────────────────────────────────────────────────
+
+const VegIcon = ({ isVeg }: { isVeg: boolean }) => (
+  <span
+    className={`inline-flex h-4 w-4 items-center justify-center rounded-sm border-2 flex-shrink-0 ${
+      isVeg ? "border-emerald-600" : "border-red-600"
+    }`}
+  >
+    <span className={`h-2 w-2 rounded-full ${isVeg ? "bg-emerald-600" : "bg-red-600"}`} />
+  </span>
+);
+
 // ── OrderCard ─────────────────────────────────────────────────────────────────
 
 const OrderCard = ({ order, token }: { order: OrderDetailsDto; token: string | null }) => {
-  const [expanded, setExpanded] = useState(false);
-  const [foodDetails, setFoodDetails] = useState<Record<number, FoodDto>>({});
-  const [foodLoading, setFoodLoading] = useState(true);
+  const [expanded, setExpanded]               = useState(false);
+  const [orderItems, setOrderItems]           = useState<OrderItemDetailsFromApi[] | null>(null);
+  const [foodMap, setFoodMap]                 = useState<Record<number, FoodDto>>({});
+  const [detailsLoading, setDetailsLoading]   = useState(true);
+  const [detailsError, setDetailsError]       = useState(false);
+
+  const grouped: GroupedItem[] = orderItems ? groupByFood(orderItems) : [];
 
   const formattedDate = new Date(order.orderTime).toLocaleString("en-IN", {
     day: "numeric", month: "short", year: "numeric",
     hour: "2-digit", minute: "2-digit",
   });
 
-  // Fetch all food details eagerly on mount
-  useEffect(() => {
-    if (!order.OrderItemDetailsDto?.length) { setFoodLoading(false); return; }
+  // Build the correct image URL — handles both relative (/uploads/x.jpg)
+  // and already-absolute paths returned by the backend
+  const imageUrl = (filePath: string | null): string | null => {
+    if (!filePath) return null;
+    if (filePath.startsWith("http")) return filePath;
+    return `http://localhost:8080${filePath.startsWith("/") ? "" : "/"}${filePath}`;
+  };
 
-    const fetchFoodDetails = async () => {
-      setFoodLoading(true);
-      try {
-        const results = await Promise.all(
-          order.OrderItemDetailsDto.map(item =>
-            fetch(`http://localhost:8080/restaurants/foods/${item.foodId}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }).then(r => r.ok ? r.json() as Promise<FoodDto> : null)
-          )
-        );
-        const map: Record<number, FoodDto> = {};
-        results.forEach(food => { if (food) map[food.id] = food; });
-        setFoodDetails(map);
-      } catch {
-        // fall back to foodId display
-      } finally {
-        setFoodLoading(false);
-      }
-    };
+  const loadDetails = async () => {
+    setDetailsLoading(true);
+    setDetailsError(false);
+    try {
+      const res = await fetch(`http://localhost:8080/orders/orderDetails/${order.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const items: OrderItemDetailsFromApi[] = await res.json();
 
-    fetchFoodDetails();
-  }, []);
+      const uniqueFoodIds = [...new Set(items.map((i) => i.foodId))];
+      const foodResults = await Promise.all(
+        uniqueFoodIds.map((foodId) =>
+          fetch(`http://localhost:8080/restaurants/foods/${foodId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }).then((r) => {
+            if (!r.ok) return null;
+            return r.json() as Promise<FoodDto>;
+          }).catch(() => null)
+        )
+      );
+
+      const map: Record<number, FoodDto> = {};
+      foodResults.forEach((food) => { if (food) map[food.id] = food; });
+
+      setOrderItems(items);
+      setFoodMap(map);
+    } catch (err) {
+      console.error(`[OrderDetails #${order.id}] failed:`, err);
+      setDetailsError(true);
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
+  useEffect(() => { loadDetails(); }, [order.id]);
 
   return (
     <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm">
+
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
@@ -133,27 +207,52 @@ const OrderCard = ({ order, token }: { order: OrderDetailsDto; token: string | n
       {/* Body */}
       <div className="px-4 pb-3">
 
-        {/* Food name pills — always visible */}
+        {/* Food pills — always visible once loaded */}
         <div className="mb-2">
-          {foodLoading ? (
+          {detailsLoading ? (
             <div className="flex items-center gap-1.5">
               <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
               <span className="text-xs text-muted-foreground">Loading items…</span>
             </div>
+          ) : detailsError ? (
+            <span className="text-[11px] text-destructive font-semibold">Failed to load items</span>
           ) : (
-            <div className="flex flex-wrap gap-1.5">
-              {order.OrderItemDetailsDto?.map(item => {
-                const food = foodDetails[item.foodId];
+            <div className="flex flex-wrap gap-2">
+              {grouped.map((g) => {
+                const food = foodMap[g.foodId];
                 return (
-                  <span
-                    key={item.id}
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-muted text-foreground"
+                  <div
+                    key={g.foodId}
+                    className="flex items-center gap-1.5 bg-muted/50 rounded-lg px-2 py-1"
                   >
-                    {food?.isVeg != null && (
-                      <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${food.isVeg ? "bg-emerald-500" : "bg-red-500"}`} />
+                    {imageUrl(food?.imageFilePath ?? null) ? (
+                      <img
+                        src={imageUrl(food!.imageFilePath)!}
+                        alt={food!.name}
+                        className="h-6 w-6 rounded-md object-cover flex-shrink-0 border border-border"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                      />
+                    ) : (
+                      <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Package className="h-3 w-3 text-primary/60" />
+                      </div>
                     )}
-                    {food?.name ?? `Food #${item.foodId}`}
-                  </span>
+                    {food?.isVeg != null && (
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${
+                          food.isVeg ? "bg-emerald-500" : "bg-red-500"
+                        }`}
+                      />
+                    )}
+                    <span className="text-[11px] font-semibold text-foreground">
+                      {food?.name ?? `Food #${g.foodId}`}
+                    </span>
+                    {g.quantity > 1 && (
+                      <span className="text-[10px] font-bold bg-primary/15 text-primary rounded-full px-1.5 py-0.5 leading-none">
+                        ×{g.quantity}
+                      </span>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -161,62 +260,139 @@ const OrderCard = ({ order, token }: { order: OrderDetailsDto; token: string | n
         </div>
 
         {/* Expanded breakdown */}
-        {expanded && !foodLoading && (
-          <div className="space-y-3 mt-3 pt-3 border-t border-dashed border-border">
-            {order.OrderItemDetailsDto?.map((item) => {
-              const food = foodDetails[item.foodId];
-              return (
-                <div key={item.id} className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 min-w-0">
-                    {food?.imageFilePath ? (
-                      <img
-                        src={`http://localhost:8080${food.imageFilePath}`}
-                        alt={food.name}
-                        className="h-10 w-10 rounded-xl object-cover flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <ShoppingBag className="h-4 w-4 text-primary" />
-                      </div>
-                    )}
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <p className="text-xs font-semibold text-foreground truncate">
-                          {food?.name ?? `Food #${item.foodId}`}
-                        </p>
-                        {food?.isVeg != null && (
-                          <span className={`h-2 w-2 rounded-full flex-shrink-0 ${food.isVeg ? "bg-emerald-500" : "bg-red-500"}`} />
-                        )}
-                        {food?.bestseller && (
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">
-                            ★ Best
-                          </span>
-                        )}
-                      </div>
-                      {food?.description && (
-                        <p className="text-[10px] text-muted-foreground truncate max-w-[160px]">
-                          {food.description}
-                        </p>
-                      )}
-                      {food?.rating != null && (
-                        <p className="text-[10px] text-muted-foreground">⭐ {food.rating.toFixed(1)}</p>
-                      )}
-                    </div>
-                  </div>
-                  <span className="text-xs font-bold text-foreground flex-shrink-0">
-                    ₹{item.price.toFixed(2)}
-                  </span>
-                </div>
-              );
-            })}
+        {expanded && (
+          <div className="mt-3 pt-3 border-t border-dashed border-border space-y-1">
 
-            {/* Order total */}
-            <div className="flex justify-between items-center pt-2 border-t border-border">
-              <span className="text-xs font-bold text-foreground">Order Total</span>
-              <span className="text-sm font-extrabold text-primary">
-                ₹{order.totalAmount.toFixed(2)}
-              </span>
-            </div>
+            {detailsLoading && (
+              <div className="flex items-center justify-center gap-2 py-6">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <span className="text-sm text-muted-foreground">Loading order details…</span>
+              </div>
+            )}
+
+            {detailsError && !detailsLoading && (
+              <div className="flex flex-col items-center gap-2 py-4">
+                <p className="text-xs text-destructive font-semibold">Failed to load details</p>
+                <button onClick={loadDetails} className="text-xs text-primary underline">
+                  Retry
+                </button>
+              </div>
+            )}
+
+            {grouped.length > 0 && !detailsLoading && (
+              <>
+                {/* Section heading */}
+                <div className="flex items-center gap-1.5 mb-3">
+                  <Utensils className="h-3.5 w-3.5 text-muted-foreground" />
+                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">
+                    {grouped.length} Item{grouped.length !== 1 ? "s" : ""} Ordered
+                  </p>
+                </div>
+
+                {/* Item rows */}
+                <div className="space-y-3">
+                  {grouped.map((g) => {
+                    const food = foodMap[g.foodId];
+                    return (
+                      <div key={g.foodId} className="flex items-start gap-3">
+                        {/* Large thumbnail */}
+                        {imageUrl(food?.imageFilePath ?? null) ? (
+                          <img
+                            src={imageUrl(food!.imageFilePath)!}
+                            alt={food!.name}
+                            className="h-14 w-14 rounded-xl object-cover flex-shrink-0 border border-border"
+                            onError={(e) => {
+                              const el = e.currentTarget as HTMLImageElement;
+                              el.style.display = "none";
+                              el.nextElementSibling?.removeAttribute("hidden");
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          hidden={!!imageUrl(food?.imageFilePath ?? null)}
+                          className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 border border-border"
+                        >
+                          <Package className="h-5 w-5 text-primary/60" />
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0 pt-0.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {food?.isVeg != null && <VegIcon isVeg={food.isVeg} />}
+                            <p className="text-sm font-bold text-foreground leading-tight">
+                              {food?.name ?? `Food #${g.foodId}`}
+                            </p>
+                            {food?.bestseller && (
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 leading-tight">
+                                ★ Bestseller
+                              </span>
+                            )}
+                          </div>
+
+                          {food?.description && (
+                            <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 leading-snug">
+                              {food.description}
+                            </p>
+                          )}
+
+                          <div className="flex items-center gap-3 mt-1.5">
+                            {food?.rating != null && (
+                              <div className="flex items-center gap-0.5">
+                                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                                <span className="text-[11px] font-semibold text-muted-foreground">
+                                  {food.rating.toFixed(1)}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1">
+                              {g.quantity > 1 && (
+                                <span className="text-[11px] text-muted-foreground">
+                                  ₹{g.unitPrice.toFixed(2)} × {g.quantity}
+                                </span>
+                              )}
+                              <span className="text-xs font-extrabold text-primary">
+                                ₹{g.totalPrice.toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Quantity pill */}
+                        <span className="text-[11px] font-bold text-muted-foreground bg-muted rounded-lg px-2 py-1 leading-none flex-shrink-0">
+                          ×{g.quantity}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Price breakdown */}
+                <div className="mt-4 pt-3 border-t border-border rounded-xl bg-muted/40 px-3 py-2.5 space-y-1.5">
+                  {grouped.map((g) => (
+                    <div key={g.foodId} className="flex items-center justify-between">
+                      <span className="text-[11px] text-muted-foreground truncate max-w-[60%]">
+                        {foodMap[g.foodId]?.name ?? `Food #${g.foodId}`}
+                        {g.quantity > 1 && (
+                          <span className="ml-1 text-muted-foreground/60">×{g.quantity}</span>
+                        )}
+                      </span>
+                      <span className="text-[11px] font-semibold text-foreground">
+                        ₹{g.totalPrice.toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+
+                  <div className="border-t border-dashed border-border my-1" />
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-foreground">Total Paid</span>
+                    <span className="text-base font-extrabold text-primary">
+                      ₹{order.totalAmount.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -226,12 +402,15 @@ const OrderCard = ({ order, token }: { order: OrderDetailsDto; token: string | n
             <p className="text-sm font-extrabold text-primary">₹{order.totalAmount.toFixed(2)}</p>
           )}
           <button
-            onClick={() => setExpanded(v => !v)}
-            className="ml-auto flex items-center gap-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => setExpanded((v) => !v)}
+            disabled={detailsLoading}
+            className="ml-auto flex items-center gap-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
           >
-            {expanded
-              ? <><ChevronUp className="h-3.5 w-3.5" /> Less</>
-              : <><ChevronDown className="h-3.5 w-3.5" /> Details</>}
+            {detailsLoading
+              ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading…</>
+              : expanded
+              ? <><ChevronUp className="h-3.5 w-3.5" /> Hide Details</>
+              : <><ChevronDown className="h-3.5 w-3.5" /> View Details</>}
           </button>
         </div>
       </div>
@@ -246,19 +425,19 @@ const Profile = () => {
   const userId = localStorage.getItem("userId");
   const token  = localStorage.getItem("token");
 
-  const [profile, setProfile]               = useState<ProfileDto | null>(null);
-  const [loading, setLoading]               = useState(true);
-  const [saving, setSaving]                 = useState(false);
-  const [orders, setOrders]                 = useState<OrderDetailsDto[]>([]);
-  const [ordersLoading, setOrdersLoading]   = useState(false);
-  const [activeSection, setActiveSection]   = useState<"menu" | "edit" | "orders" | "settings">("menu");
+  const [profile, setProfile]             = useState<ProfileDto | null>(null);
+  const [loading, setLoading]             = useState(true);
+  const [saving, setSaving]               = useState(false);
+  const [orders, setOrders]               = useState<OrderDetailsDto[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [activeSection, setActiveSection] = useState<"menu" | "edit" | "orders" | "settings">("menu");
 
   const [name, setName]       = useState("");
   const [age, setAge]         = useState("");
   const [phone, setPhone]     = useState("");
   const [address, setAddress] = useState("");
 
-  // ── Fetch profile ─────────────────────────────────────────────────────────
+  // Fetch profile
   useEffect(() => {
     if (!userId) { navigate("/auth"); return; }
 
@@ -285,7 +464,7 @@ const Profile = () => {
     fetchProfile();
   }, [userId, navigate]);
 
-  // ── Fetch orders when section opens ──────────────────────────────────────
+  // Fetch orders when section opens
   useEffect(() => {
     if (activeSection !== "orders" || !userId) return;
 
@@ -308,7 +487,7 @@ const Profile = () => {
     fetchOrders();
   }, [activeSection, userId]);
 
-  // ── Save profile ──────────────────────────────────────────────────────────
+  // Save profile
   const handleSave = async () => {
     if (!profile) return;
     setSaving(true);
@@ -325,19 +504,29 @@ const Profile = () => {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error();
-      const updated: ProfileDto = await res.json();
-      setProfile(updated);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      // Backend may return the updated profile as JSON, or just a 200/204 with no body
+      const contentType = res.headers.get("content-type") ?? "";
+      if (contentType.includes("application/json")) {
+        const updated: ProfileDto = await res.json();
+        setProfile(updated);
+      } else {
+        // No JSON body — update local state directly from what we sent
+        setProfile(payload);
+      }
+
       toast({ title: "Profile updated", description: "Your changes have been saved." });
       setActiveSection("menu");
-    } catch {
+    } catch (err) {
+      console.error("[handleSave] failed:", err);
       toast({ title: "Error", description: "Could not save profile.", variant: "destructive" });
     } finally {
       setSaving(false);
     }
   };
 
-  // ── Logout ────────────────────────────────────────────────────────────────
+  // Logout
   const handleLogout = () => {
     localStorage.removeItem("userId");
     localStorage.removeItem("token");
@@ -386,10 +575,9 @@ const Profile = () => {
 
       <main className="px-4 pt-6 max-w-md mx-auto">
 
-        {/* ── MENU ── */}
+        {/* MENU */}
         {activeSection === "menu" && (
           <div className="space-y-6">
-            {/* Avatar card */}
             <div className="flex flex-col items-center gap-2 py-6 rounded-2xl bg-card border border-border shadow-sm">
               <Avatar className="h-20 w-20">
                 <AvatarFallback className="text-xl font-bold bg-primary text-primary-foreground">
@@ -411,7 +599,6 @@ const Profile = () => {
               )}
             </div>
 
-            {/* Menu items */}
             <div className="space-y-2">
               {menuItems.map((item) => {
                 const Icon = item.icon;
@@ -444,12 +631,12 @@ const Profile = () => {
           </div>
         )}
 
-        {/* ── EDIT ── */}
+        {/* EDIT */}
         {activeSection === "edit" && (
           <div className="space-y-4">
             {[
               { label: "Name",    value: name,    set: setName,    placeholder: "Your name" },
-              { label: "Age",     value: age,     set: setAge,     placeholder: "Your age",          type: "number" },
+              { label: "Age",     value: age,     set: setAge,     placeholder: "Your age",         type: "number" },
               { label: "Phone",   value: phone,   set: setPhone,   placeholder: "Phone number" },
               { label: "Address", value: address, set: setAddress, placeholder: "Delivery address" },
             ].map(({ label, value, set, placeholder, type }) => (
@@ -474,7 +661,7 @@ const Profile = () => {
           </div>
         )}
 
-        {/* ── ORDERS ── */}
+        {/* ORDERS */}
         {activeSection === "orders" && (
           <div className="space-y-3">
             {ordersLoading ? (
@@ -508,7 +695,7 @@ const Profile = () => {
           </div>
         )}
 
-        {/* ── SETTINGS ── */}
+        {/* SETTINGS */}
         {activeSection === "settings" && (
           <div className="space-y-3">
             {[

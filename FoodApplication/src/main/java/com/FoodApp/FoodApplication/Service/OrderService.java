@@ -53,7 +53,11 @@ public class OrderService
         cartDetailsRepository.delete(cartDetails);
         orderDetailsRepository.save(orderDetails);
     }
-    public List<OrderDetailsDto>  getOrderDetailsByUserId(long userId)
+    public List<OrderItemDetailsDto> getOrderItemDetails(Long orderId)
+    {
+        return orderItemDetailsRepository.findCartDtosByCartId(orderId);
+    }
+    public List<OrderDetailsDto>  getOrderDetailsByUserId(Long userId)
     {
         UserProfile userDetails=userDetailsRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("User id"+userId+"not found"));;
         List<OrderDetails> orderDetails=orderDetailsRepository.findByUserProfile(userDetails);

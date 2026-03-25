@@ -3,6 +3,7 @@ package com.FoodApp.FoodApplication.repository;
 
 import com.FoodApp.FoodApplication.DTO.OrderDetailsDto;
 import com.FoodApp.FoodApplication.DTO.OrderItemDetailsDto;
+import com.FoodApp.FoodApplication.entity.OrderDetails;
 import com.FoodApp.FoodApplication.entity.OrderItemsDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -28,4 +29,5 @@ WHERE oi.orderDetails.id=:orderId
 """)
     List<OrderItemDetailsDto> findCartDtosByCartId(@Param("orderId") Long orderId);
 
+    //List<OrderItemsDetails> findByOrderDetails(OrderDetails orderDetails);
 }

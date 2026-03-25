@@ -127,10 +127,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [request]);
 
-  // ── ensure cart exists and return cartId ──────────────────────────────────
-  // 1. Try GET /cart/user/{userId} to see if a cart already exists
-  // 2. If not (404 / empty), POST /cart/addCart to create one
-  // 3. GET /cart/user/{userId} again to get the real CartDetailsDto with id
+  // ── ensure cart exists and return a VERIFIED cartId ──────────────────────
+  // Always hits the server — never trusts the cached cartId blindly.
+  // 1. GET /cart/user/{userId} → if found, update cache and return id
+  // 2. If 404/missing → POST /cart/addCart to create one
+  // 3. GET /cart/user/{userId} again to get the real id
 
   const ensureCart = useCallback(
     async (userId: number): Promise<number> => {
@@ -165,7 +166,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     [request]
   );
 
-  // ── initCart (public API — kept for backwards compat) ─────────────────────
+  // ── initCart (public API) ─────────────────────────────────────────────────
 
   const initCart = useCallback(
     async (userId: number) => {
@@ -198,19 +199,19 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       setError(null);
 
       try {
-        // Resolve (or create) the cart — always get the real cartId
-        let currentCartId = cartId;
-        if (!currentCartId) {
-          currentCartId = await ensureCart(Number(userId));
-        }
+        // ✅ KEY FIX: Always call ensureCart — never use the cached cartId directly.
+        // If the cart was deleted server-side, the cached id is stale and will 404.
+        // ensureCart fetches the real cart from the server (or creates a new one).
+        const currentCartId = await ensureCart(Number(userId));
 
-        // Cache display metadata
+        // Cache display metadata for enrichItems()
         metaCache.set(item.foodId, {
           name: item.name,
           restaurant: item.restaurant,
           image: item.image,
         });
 
+        // Re-read items from state after ensureCart may have refreshed them
         const existing = items.find((i) => i.foodId === item.foodId);
 
         if (existing && existing.id != null) {
@@ -305,6 +306,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     try {
       await request<string>(`/cart/clear/${cartId}`, { method: "DELETE" });
       setItems([]);
+      // Clear stale cartId so next addItem creates a fresh cart
+      setCartId(null);
+      sessionStorage.removeItem("cartId");
     } catch (e) {
       setError((e as Error).message);
     } finally {

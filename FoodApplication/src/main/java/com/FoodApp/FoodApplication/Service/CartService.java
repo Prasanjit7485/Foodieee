@@ -113,7 +113,7 @@ public class CartService
     {
         CartItemDetails cartItemDetails=cartItemDetailsRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Cart Item with id " + id  + " not found"));
         Double previousPrice=cartItemDetails.getPrice();
-        CartDetails cartDetails=cartDetailsRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Cart with id " + id  + " not found"));
+        CartDetails cartDetails=cartItemDetails.getCart();
         Double newPrice =cartDetails.getTotalPrice()-previousPrice;
         cartDetails.setTotalPrice(newPrice);
         cartItemDetailsRepository.deleteById(id);

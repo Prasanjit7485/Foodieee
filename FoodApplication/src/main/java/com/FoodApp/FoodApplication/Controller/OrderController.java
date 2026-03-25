@@ -2,6 +2,7 @@ package com.FoodApp.FoodApplication.Controller;
 
 
 import com.FoodApp.FoodApplication.DTO.OrderDetailsDto;
+import com.FoodApp.FoodApplication.DTO.OrderItemDetailsDto;
 import com.FoodApp.FoodApplication.Service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,5 +26,10 @@ public class OrderController
     public ResponseEntity<List<OrderDetailsDto>> getOrderDetails(@PathVariable long userId)
     {
         return  ResponseEntity.ok(orderService.getOrderDetailsByUserId(userId));
+    }
+    @GetMapping("/orderDetails/{orderId}")
+    public ResponseEntity<List<OrderItemDetailsDto>> getOrDerItemDetails(@PathVariable long orderId)
+    {
+        return ResponseEntity.ok(orderService.getOrderItemDetails(orderId));
     }
 }

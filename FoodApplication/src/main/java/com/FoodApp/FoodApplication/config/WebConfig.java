@@ -9,19 +9,21 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class WebConfig implements WebMvcConfigurer{
+public class WebConfig implements WebMvcConfigurer
+{
    @Override
     public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
 
-        String projectDir = System.getProperty("user.dir");
-        String uploadDir = projectDir+File.separator + "uploads" + File.separator;
+        String projectDir=System.getProperty("user.dir");
+        String uploadDir=projectDir+File.separator + "uploads" + File.separator;
 
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:" + uploadDir);
                 System.out.println(uploadDir);
     }
     @Override
-    public void addCorsMappings(@NonNull CorsRegistry registry) {
+    public void addCorsMappings(@NonNull CorsRegistry registry) 
+    {
         registry.addMapping("/**")
                 .allowedOrigins("http://localhost:5173")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")

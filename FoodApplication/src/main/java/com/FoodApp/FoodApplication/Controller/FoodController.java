@@ -4,7 +4,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.FoodApp.FoodApplication.DTO.FoodDetailsDto;
 import com.FoodApp.FoodApplication.Service.FoodService;
@@ -22,7 +27,7 @@ public class FoodController
     service.saveFoodDetails(foodDetailsDto);
     return ResponseEntity.ok("Food details saved successfully");
  }
- @PutMapping("/update/id")
+ // @PutMapping("/update/id")
 
  @GetMapping("/{id}")
  public ResponseEntity<FoodDetailsDto> getFoodDetailsById(@PathVariable Long id)
@@ -30,7 +35,7 @@ public class FoodController
     FoodDetailsDto dto=service.getFoodDetailsById(id);
     return ResponseEntity.ok(dto);
  }
- @GetMapping("/{foodName}")
+ @GetMapping("/name/{foodName}")
  public ResponseEntity<List<FoodDetailsDto>>  getFoodDetailsByName(@PathVariable String foodName)
  {
      return ResponseEntity.ok(service.getFoodDetailsByName(foodName));

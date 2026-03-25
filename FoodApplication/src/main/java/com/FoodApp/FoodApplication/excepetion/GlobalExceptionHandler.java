@@ -27,12 +27,7 @@ public class GlobalExceptionHandler
       return buildResponse(HttpStatus.UNAUTHORIZED, "AUTH_001", "Invalid username or password");
    }
 
-   @ExceptionHandler(Exception.class)
-    public ResponseEntity<HashMap<String,Object>> handleGeneric(Exception ex)
-    {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "SYS_001", 
-                             "Something went wrong. Please try again later.");
-    }
+
    private ResponseEntity<HashMap<String,Object>> buildResponse(HttpStatus status,String code, String message)
    {
         HashMap<String,Object> body = new HashMap<>();
