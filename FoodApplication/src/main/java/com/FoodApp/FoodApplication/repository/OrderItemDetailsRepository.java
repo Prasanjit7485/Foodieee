@@ -1,16 +1,15 @@
 package com.FoodApp.FoodApplication.repository;
 
 
-import com.FoodApp.FoodApplication.DTO.OrderDetailsDto;
-import com.FoodApp.FoodApplication.DTO.OrderItemDetailsDto;
-import com.FoodApp.FoodApplication.entity.OrderDetails;
-import com.FoodApp.FoodApplication.entity.OrderItemsDetails;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.FoodApp.FoodApplication.DTO.OrderItemDetailsDto;
+import com.FoodApp.FoodApplication.entity.OrderItemsDetails;
 
 @Repository
 public interface OrderItemDetailsRepository extends JpaRepository<OrderItemsDetails,Long>
@@ -20,7 +19,9 @@ SELECT new com.FoodApp.FoodApplication.DTO.OrderItemDetailsDto(
       oi.id,
       o.id,
       f.id,
-      f.price
+      f.price,
+      oi.quantity
+      
 )
 FROM OrderItemsDetails oi
 JOIN oi.foodDetails f

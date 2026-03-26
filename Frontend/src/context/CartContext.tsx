@@ -325,7 +325,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // ── derived values ─────────────────────────────────────────────────────────
 
   const totalCount = items.reduce((s, i) => s + i.quantity, 0);
-  const totalPrice = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const totalPrice = items.reduce((s, i) => s + i.price , 0);
 
   return (
     <CartContext.Provider

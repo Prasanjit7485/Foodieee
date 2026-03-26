@@ -57,6 +57,7 @@ interface OrderItemDetailsFromApi {
   orderId: number;
   foodId: number;
   price: number;
+  quantity: number; // from backend
 }
 
 // ── Grouped item ──────────────────────────────────────────────────────────────
@@ -74,15 +75,15 @@ function groupByFood(items: OrderItemDetailsFromApi[]): GroupedItem[] {
   for (const item of items) {
     const existing = map.get(item.foodId);
     if (existing) {
-      existing.quantity   += 1;
-      existing.totalPrice += item.price;
+      existing.quantity   += item.quantity;
+      existing.totalPrice += item.price * item.quantity;
       existing.rawItems.push(item);
     } else {
       map.set(item.foodId, {
         foodId:     item.foodId,
-        quantity:   1,
+        quantity:   item.quantity,
         unitPrice:  item.price,
-        totalPrice: item.price,
+        totalPrice: item.price * item.quantity,
         rawItems:   [item],
       });
     }
@@ -119,6 +120,44 @@ const VegIcon = ({ isVeg }: { isVeg: boolean }) => (
   </span>
 );
 
+// ── FoodImage — handles load error cleanly ────────────────────────────────────
+
+const FoodImage = ({
+  src,
+  alt,
+  className,
+  fallbackClassName,
+  iconSize,
+}: {
+  src: string | null;
+  alt: string;
+  className: string;
+  fallbackClassName: string;
+  iconSize: string;
+}) => {
+  const [errored, setErrored] = useState(false);
+
+  // Reset error state if src changes
+  useEffect(() => { setErrored(false); }, [src]);
+
+  if (!src || errored) {
+    return (
+      <div className={fallbackClassName}>
+        <Package className={iconSize} />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setErrored(true)}
+    />
+  );
+};
+
 // ── OrderCard ─────────────────────────────────────────────────────────────────
 
 const OrderCard = ({ order, token }: { order: OrderDetailsDto; token: string | null }) => {
@@ -135,12 +174,9 @@ const OrderCard = ({ order, token }: { order: OrderDetailsDto; token: string | n
     hour: "2-digit", minute: "2-digit",
   });
 
-  // Build the correct image URL — handles both relative (/uploads/x.jpg)
-  // and already-absolute paths returned by the backend
   const imageUrl = (filePath: string | null): string | null => {
     if (!filePath) return null;
-    if (filePath.startsWith("http")) return filePath;
-    return `http://localhost:8080${filePath.startsWith("/") ? "" : "/"}${filePath}`;
+    return `http://localhost:8080/uploads/${filePath}`;
   };
 
   const loadDetails = async () => {
@@ -225,18 +261,15 @@ const OrderCard = ({ order, token }: { order: OrderDetailsDto; token: string | n
                     key={g.foodId}
                     className="flex items-center gap-1.5 bg-muted/50 rounded-lg px-2 py-1"
                   >
-                    {imageUrl(food?.imageFilePath ?? null) ? (
-                      <img
-                        src={imageUrl(food!.imageFilePath)!}
-                        alt={food!.name}
-                        className="h-6 w-6 rounded-md object-cover flex-shrink-0 border border-border"
-                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                      />
-                    ) : (
-                      <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Package className="h-3 w-3 text-primary/60" />
-                      </div>
-                    )}
+                    {/* ✅ FoodImage handles missing/broken images cleanly */}
+                    <FoodImage
+                      src={imageUrl(food?.imageFilePath ?? null)}
+                      alt={food?.name ?? `Food #${g.foodId}`}
+                      className="h-6 w-6 rounded-md object-cover flex-shrink-0 border border-border"
+                      fallbackClassName="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0"
+                      iconSize="h-3 w-3 text-primary/60"
+                    />
+
                     {food?.isVeg != null && (
                       <span
                         className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${
@@ -295,25 +328,14 @@ const OrderCard = ({ order, token }: { order: OrderDetailsDto; token: string | n
                     const food = foodMap[g.foodId];
                     return (
                       <div key={g.foodId} className="flex items-start gap-3">
-                        {/* Large thumbnail */}
-                        {imageUrl(food?.imageFilePath ?? null) ? (
-                          <img
-                            src={imageUrl(food!.imageFilePath)!}
-                            alt={food!.name}
-                            className="h-14 w-14 rounded-xl object-cover flex-shrink-0 border border-border"
-                            onError={(e) => {
-                              const el = e.currentTarget as HTMLImageElement;
-                              el.style.display = "none";
-                              el.nextElementSibling?.removeAttribute("hidden");
-                            }}
-                          />
-                        ) : null}
-                        <div
-                          hidden={!!imageUrl(food?.imageFilePath ?? null)}
-                          className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 border border-border"
-                        >
-                          <Package className="h-5 w-5 text-primary/60" />
-                        </div>
+                        {/* ✅ Large thumbnail — same FoodImage component */}
+                        <FoodImage
+                          src={imageUrl(food?.imageFilePath ?? null)}
+                          alt={food?.name ?? `Food #${g.foodId}`}
+                          className="h-14 w-14 rounded-xl object-cover flex-shrink-0 border border-border"
+                          fallbackClassName="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 border border-border"
+                          iconSize="h-5 w-5 text-primary/60"
+                        />
 
                         {/* Info */}
                         <div className="flex-1 min-w-0 pt-0.5">
@@ -506,13 +528,11 @@ const Profile = () => {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      // Backend may return the updated profile as JSON, or just a 200/204 with no body
       const contentType = res.headers.get("content-type") ?? "";
       if (contentType.includes("application/json")) {
         const updated: ProfileDto = await res.json();
         setProfile(updated);
       } else {
-        // No JSON body — update local state directly from what we sent
         setProfile(payload);
       }
 

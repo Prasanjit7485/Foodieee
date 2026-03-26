@@ -1,21 +1,26 @@
 package com.FoodApp.FoodApplication.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.FoodApp.FoodApplication.DTO.OrderDetailsDto;
 import com.FoodApp.FoodApplication.DTO.OrderItemDetailsDto;
 import com.FoodApp.FoodApplication.Enums.OrderStatus;
-import com.FoodApp.FoodApplication.entity.*;
+import com.FoodApp.FoodApplication.entity.CartDetails;
+import com.FoodApp.FoodApplication.entity.CartItemDetails;
+import com.FoodApp.FoodApplication.entity.OrderDetails;
+import com.FoodApp.FoodApplication.entity.OrderItemsDetails;
+import com.FoodApp.FoodApplication.entity.UserProfile;
 import com.FoodApp.FoodApplication.excepetion.ResourceNotFoundException;
 import com.FoodApp.FoodApplication.repository.CartDetailsRepository;
 import com.FoodApp.FoodApplication.repository.OrderDetailsRepository;
 import com.FoodApp.FoodApplication.repository.OrderItemDetailsRepository;
 import com.FoodApp.FoodApplication.repository.UserDetailsRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class OrderService
@@ -46,6 +51,7 @@ public class OrderService
             orderItemsDetails.setOrderDetails(orderDetails);
             orderItemsDetails.setFoodDetails(cartItemsDetails.getFood());
             orderItemsDetails.setPrice(cartItemsDetails.getPrice());
+            orderItemsDetails.setQuantity(cartItemsDetails.getQuantity());
             orderItemDetailsRepository.save(orderItemsDetails);
             orderItemsDetailsList.add(orderItemsDetails);
         }

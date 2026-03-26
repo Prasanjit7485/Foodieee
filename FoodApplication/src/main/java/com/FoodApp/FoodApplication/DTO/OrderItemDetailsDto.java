@@ -15,4 +15,5 @@ public class OrderItemDetailsDto
     private Long orderId;
     private Long foodId;
     private Double price;
+    private int quantity;
 }
